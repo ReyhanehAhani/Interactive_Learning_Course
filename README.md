@@ -187,8 +187,121 @@ mean_sarsa_rewards = np.zeros(episodes)
 max_sarsa_rewards = np.array([-np.inf] * episodes)
 # ... (SARSA training loop)
 ```
-This
-
- section runs the SARSA algorithm, which is another reinforcement learning algorithm that updates Q-values based on the current policy.
+This section runs the SARSA algorithm, which is another reinforcement learning algorithm that updates Q-values based on the current policy.
 
 Each of the training loops iterates through episodes and updates the Q-values based on the observed rewards and transitions in the environment. The results are stored in arrays for later analysis or plotting.
+
+# Deep RL Hands-on
+## Linear Function Approximator
+
+## Introduction
+This code implements a simple linear function approximator with examples demonstrating its usage in two scenarios: approximating a linear function and approximating the sine function. The code also includes a section on Policy Gradient in Reinforcement Learning and an implementation of the Deep SARSA algorithm.
+
+## Linear Function Approximator
+### Implementation
+The `LinearFunctionApproximator` class is implemented to approximate a linear function. The class has methods for prediction (`predict`) and updating the model (`update`). The example usage section demonstrates the training process on two different linear functions.
+
+### Example Usage
+1. **Linear Function Approximation:**
+   ```python
+   num_features = 2
+   approximator = LinearFunctionApproximator(num_features)
+   num_episodes = 1000
+
+   for episode in range(num_episodes):
+       phi_s = np.random.rand(num_features)
+       target_value = 10 * phi_s[0] + 5 * phi_s[1]
+       approximator.update(phi_s, target_value)
+
+   test = np.array([0.8, 0.2])
+   predicted_value = approximator.predict(test)
+   print(f"Predicted Value for phi_s {test}: {predicted_value}")
+   ```
+
+2. **Sine Function Approximation:**
+   ```python
+   num_terms = 3
+   approximator = LinearFunctionApproximator(num_terms)
+   num_episodes = 1000
+
+   for episode in range(num_episodes):
+       x = np.random.uniform(-np.pi, np.pi)
+       features = np.array([x**i / np.math.factorial(i) for i in range(1, 2 * num_terms, 2)])
+       target_value = np.sin(x)
+       approximator.update(features, target_value)
+
+   test_x_values = np.linspace(-np.pi, np.pi, 100)
+   predicted_values = [approximator.predict([x**i / np.math.factorial(i) for i in range(1, 2 * num_terms, 2)]) for x in test_x_values]
+
+   plt.plot(test_x_values, np.sin(test_x_values), label='True sin(x)')
+   plt.plot(test_x_values, predicted_values, label='Approximation')
+   plt.legend()
+   plt.title('Linear Approximation of sin(x)')
+   plt.xlabel('x')
+   plt.ylabel('sin(x)')
+   plt.show()
+   ```
+
+## Policy Gradient in Reinforcement Learning
+### Implementation
+This section focuses on the implementation of the Policy Gradient algorithm in reinforcement learning using PyTorch. The code defines a neural network (`Policy`) representing the policy and provides functions for training and evaluating the agent.
+
+### Example Usage
+1. **Training a CartPole Agent:**
+   ```python
+   # Define parameters
+   cartpole_hyperparameters = {
+       "h_size": 16,
+       "n_training_episodes": 1000,
+       "n_evaluation_episodes": 10,
+       "max_t": 1000,
+       "gamma": 1.0,
+       "lr": 1e-2,
+       "env_id": env_id,
+       "state_space": s_size,
+       "action_space": a_size,
+   }
+
+   # Create policy and optimizer
+   cartpole_policy = Policy(cartpole_hyperparameters["state_space"], cartpole_hyperparameters["action_space"], cartpole_hyperparameters["h_size"]).to(device)
+   cartpole_optimizer = optim.Adam(cartpole_policy.parameters(), lr=cartpole_hyperparameters["lr"])
+
+   # Train the agent
+   scores = reinforce(cartpole_policy, cartpole_optimizer, cartpole_hyperparameters["n_training_episodes"], cartpole_hyperparameters["max_t"], cartpole_hyperparameters["gamma"], 100)
+
+   # Plot the training progress
+   plt.plot(scores)
+   ```
+
+2. **Evaluating the Trained Agent:**
+   ```python
+   # Evaluate the trained agent
+   mean_reward, std_reward = evaluate_agent(eval_env, cartpole_hyperparameters["max_t"], cartpole_hyperparameters["n_evaluation_episodes"], cartpole_policy)
+   print(f"Mean Reward: {mean_reward}, Std Reward: {std_reward}")
+   ```
+
+3. **Recording a Video of the Trained Agent:**
+   ```python
+   # Record a video of the trained agent
+   video_path = 'cartpole_video'
+   record_video(env, cartpole_policy, video_path, 30)
+   ```
+
+## Deep SARSA
+### Implementation
+This section provides an implementation of the Deep SARSA algorithm using PyTorch. It includes a neural network (`SARSAPolicy`) to represent the policy and a training loop to update the model.
+
+### Example Usage
+```python
+# Create SARSA policy and optimizer
+sarsa_policy = SARSAPolicy(sarsa_hyperparameters["state_space"], sarsa_hyperparameters["action_space"], sarsa_hyperparameters["h_size"]).to(device)
+sarsa_optimizer = optim.Adam(sarsa_policy.parameters(), lr=sarsa_hyperparameters["lr"])
+
+# SARSA training loop
+for episode in range(sarsa_hyperparameters["n_training_episodes"]):
+    # ... (training loop details)
+```
+
+## Visualization
+The code also includes visualization components, such as plotting training progress and recording videos of the trained agents.
+
